@@ -1,10 +1,12 @@
 from fastapi import FastAPI
 
-from app.database import create_tables
-
-create_tables()
+from app.database import Base, engine
+from app.models import URL, User
 
 app = FastAPI()
+
+Base.metadata.create_all(bind=engine)
+
 
 @app.get("/")
 def root():

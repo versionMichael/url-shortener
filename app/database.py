@@ -9,8 +9,3 @@ SessionLocal = sessionmaker(bind=engine)
 
 class Base(DeclarativeBase):
     pass
-
-from app.models import User,URL
-
-def create_tables():
-    Base.metadata.create_all(bind=engine)
