@@ -1,16 +1,24 @@
 from datetime import datetime
 
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel, Field, HttpUrl
 
 
 class URLCreate(BaseModel):
     original_url: HttpUrl
-    expires_at: datetime | None = None
+    expires_in_minutes: int | None = Field(
+        default=None,
+        ge=1,
+        description="How many minutes until the URL expires. Leave empty for no expiration."
+    )
 
 
 class URLUpdate(BaseModel):
     original_url: HttpUrl | None = None
-    expires_at: datetime | None = None
+    expires_in_minutes: int | None = Field(
+        default=None,
+        ge=1,
+        description="How many minutes until the URL expires. Leave empty for no expiration."
+    )
 
 
 class URLResponse(BaseModel):
