@@ -73,6 +73,26 @@ async def get_user_url(
     )
 
 
+async def delete_url(
+        db: AsyncSession,
+        url_id: int,
+        user_id: int
+) -> bool:
+    url = await get_user_url(
+        db=db,
+        url_id=url_id,
+        user_id=user_id
+    )
+
+    if not url:
+        return False
+
+    await db.delete(url)
+    await db.commit()
+
+    return True
+
+
 async def get_url_by_code(
     db: AsyncSession,
     short_code: str
