@@ -60,6 +60,18 @@ async def get_user_urls(
 
     return list(result)
 
+async def get_user_url(
+        db: AsyncSession,
+        url_id: int,
+        user_id: int
+) -> URL | None:
+    return await db.scalar(
+        select(URL).where(
+            URL.id == url_id,
+            URL.user_id == user_id
+        )
+    )
+
 
 async def get_url_by_code(
     db: AsyncSession,

@@ -12,15 +12,6 @@ class URLCreate(BaseModel):
     )
 
 
-class URLUpdate(BaseModel):
-    original_url: HttpUrl | None = None
-    expires_in_minutes: int | None = Field(
-        default=None,
-        ge=1,
-        description="How many minutes until the URL expires. Leave empty for no expiration."
-    )
-
-
 class URLResponse(BaseModel):
     id: int
     short_code: str
