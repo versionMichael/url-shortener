@@ -27,3 +27,12 @@ async def get_cached_url(
     return await redis_client.get(
         f"url:{short_code}"
     )
+
+
+async def delete_cached_url(
+    short_code: str
+):
+
+    await redis_client.delete(
+        f"url:{short_code}"
+    )

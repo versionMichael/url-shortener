@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.dependencies import get_current_user, get_db
 from app.models.user import User
 from app.schemas.url import URLCreate, URLResponse
+from app.services.cache import delete_cached_url
 from app.services.url import create_url, delete_url , get_user_url ,get_user_urls
 
 
@@ -67,6 +68,21 @@ async def delete_short_url(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
+
+    url = await get_user_url(
+        db=db,
+        url_id=url_id,
+        user_id=current_user.id
+    )
+
+    if not url:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="URL not found"
+        )
+
+    short_code = url.short_code
+    
     deleted = await delete_url(
         db=db,
         url_id=url_id,
@@ -78,3 +94,7 @@ async def delete_short_url(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="URL not found"
         )
+
+    await delete_cached_url(
+        short_code
+    )
