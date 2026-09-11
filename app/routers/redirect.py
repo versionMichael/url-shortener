@@ -1,11 +1,12 @@
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import get_db
 from app.services.cache import get_cached_url, set_cached_url
+from app.services.rate_limit import check_rate_limit
 from app.services.url import get_url_by_code, increment_click_count
 
 
@@ -16,8 +17,19 @@ router = APIRouter(tags=["Redirect"])
 @router.get("/{short_code}")
 async def redirect_to_url(
     short_code: str,
+    request: Request,
     db: AsyncSession = Depends(get_db)
 ):
+
+    allowed = await check_rate_limit(
+        request.client.host
+    )
+
+    if not allowed:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Rate limit exceeded. Try again later."
+        )
 
     cached_url = await get_cached_url(short_code)
 
