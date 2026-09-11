@@ -11,11 +11,13 @@ redis_client = redis.from_url(
 
 async def set_cached_url(
     short_code: str,
-    original_url: str
+    original_url: str,
+    expires_in_seconds: int | None = None
 ):
     await redis_client.set(
         f"url:{short_code}",
-        original_url
+        original_url,
+        ex=expires_in_seconds
     )
 
 

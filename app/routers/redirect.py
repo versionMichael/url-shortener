@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -47,9 +49,17 @@ async def redirect_to_url(
         short_code=short_code
 )
 
+    expires_in_seconds = None
+
+    if url.expires_at:
+        expires_in_seconds = int(
+            (url.expires_at - datetime.now(timezone.utc)).total_seconds()
+        )
+
     await set_cached_url(
         short_code,
-        str(url.original_url)
+        str(url.original_url),
+        expires_in_seconds
     )
 
     return RedirectResponse(
