@@ -71,6 +71,30 @@ The API allows authenticated users to create, manage, and track shortened URLs, 
 
 The redirect endpoint also handles click tracking, caching, URL expiration, and rate limiting.
 
+## Using a Shortened URL
+
+After creating a shortened URL, the API returns a `short_code`.
+
+To use the shortened URL, place the `short_code` at the end of the API's base URL:
+
+```text
+https://url-shortener-production-2412.up.railway.app/{short_code}
+```
+
+For example, if the API returns:
+
+```text
+short_code: abc123
+```
+
+Your shortened URL would be:
+
+```text
+https://url-shortener-production-2412.up.railway.app/abc123
+```
+
+Opening the shortened URL will redirect you to the original website.
+
 ## Authentication
 
 The API uses JWT bearer authentication.
@@ -206,8 +230,13 @@ Example:
 ```env
 DATABASE_URL=postgresql+psycopg://postgres:YOUR_PASSWORD@localhost:5432/url_shortener
 TEST_DATABASE_URL=postgresql+psycopg://postgres:YOUR_PASSWORD@localhost:5432/url_shortener_test
-REDIS_URL=redis://localhost:6379/0
 SECRET_KEY=YOUR_SECRET_KEY
+```
+
+`REDIS_URL` is optional for local development. If it is not set, the application defaults to:
+
+```text
+redis://localhost:6379/0
 ```
 
 ### 5. Start the application
@@ -249,6 +278,12 @@ The API will be available at:
 
 ```text
 http://localhost:8000
+```
+
+Swagger documentation:
+
+```text
+http://localhost:8000/docs
 ```
 
 Stop the containers with:
