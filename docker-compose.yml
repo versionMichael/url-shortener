@@ -1,0 +1,32 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: url_shortener
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d url_shortener"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@postgres:5432/url_shortener
+      TEST_DATABASE_URL: postgresql+psycopg://postgres:postgres@postgres:5432/url_shortener
+      SECRET_KEY: docker-development-secret
+      REDIS_URL: redis://host.docker.internal:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
