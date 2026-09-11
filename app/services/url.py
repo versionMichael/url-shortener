@@ -107,8 +107,17 @@ async def get_url_by_code(
     if url.expires_at and url.expires_at <= datetime.now(timezone.utc):
         return None
 
-    url.click_count += 1
-
-    await db.commit()
-
     return url
+
+
+async def increment_click_count(
+        db: AsyncSession,
+        short_code: str
+):
+    url = await db.scalar(
+        select(URL).where(URL.short_code == short_code)
+    )
+
+    if url:
+        url.click_count +=1
+        await db.commit()
