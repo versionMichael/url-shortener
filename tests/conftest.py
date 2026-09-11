@@ -5,22 +5,24 @@ from dotenv import load_dotenv
 
 from sqlalchemy import delete
 
-def pytest_asyncio_loop_factories(config, item):
-    return{
-        "selector": asyncio.SelectorEventLoop
-    }
-
-
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
     create_async_engine
 )
 
+import pytest_asyncio
+
 from app.database import Base
 from app.models import URL, User
+from app.main import app
+from app.core.dependencies import get_db
 
-import pytest_asyncio
+
+def pytest_asyncio_loop_factories(config, item):
+    return {
+        "selector": asyncio.SelectorEventLoop
+    }
 
 
 load_dotenv()
@@ -35,20 +37,24 @@ test_engine = create_async_engine(
     TEST_DATABASE_URL
 )
 
+
 TestSessionLocal = async_sessionmaker(
     bind=test_engine,
     class_=AsyncSession,
     expire_on_commit=False
 )
 
+
 @pytest_asyncio.fixture
 async def db_session():
     async with TestSessionLocal() as session:
         yield session
 
-        await session.execute(
-            delete(URL))
+        await session.rollback()
 
+        await session.execute(
+            delete(URL)
+        )
 
         await session.execute(
             delete(User)
@@ -67,3 +73,16 @@ async def setup_test_database():
     yield
 
     await test_engine.dispose()
+
+
+@pytest_asyncio.fixture(scope="session", autouse=True)
+async def override_database():
+    async def override_get_db():
+        async with TestSessionLocal() as session:
+            yield session
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    yield
+
+    app.dependency_overrides.clear()

@@ -35,8 +35,11 @@ def create_access_token(user_id: int) -> str:
 
 
 def decode_access_token(token: str) -> dict:
-    return jwt.decode(
-        token,
-        settings.secret_key,
-        algorithms=[settings.algorithm]
-    )
+    try:
+        return jwt.decode(
+            token,
+            settings.secret_key,
+            algorithms=[settings.algorithm]
+        )
+    except jwt.InvalidTokenError:
+        return {}
